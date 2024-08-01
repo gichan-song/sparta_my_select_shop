@@ -86,7 +86,7 @@ public class ProductService {
                 () -> new NullPointerException("해당 폴더가 존재하지 않습니다.")
         );
         if (!product.getUser().getId().equals(user.getId())
-        || !folder.getUser().getId().equals(user.getId())) {
+                || !folder.getUser().getId().equals(user.getId())) {
             throw new IllegalArgumentException("회원님의 관심상품이 아니거나, 회원님의 폴더가 아닙니다.");
         }
 
@@ -98,5 +98,15 @@ public class ProductService {
 
         productFolderRepository.save(new ProductFolder(product, folder));
 
+    }
+
+    public Page<ProductResponseDto> getProductsInFolder(Long folderId, int page, int size, String sortBy, boolean isAsc, User user) {
+        Sort.Direction direction = isAsc ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Sort sort = Sort.by(direction, sortBy);
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        Page<Product> productList = productRepository.findAllByUserAndProductFolderList_FolderId(user, folderId, pageable);
+
+        return productList.map(ProductResponseDto::new);
     }
 }
